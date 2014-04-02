@@ -21,6 +21,10 @@ unsigned int nModifierInterval = MODIFIER_INTERVAL;
 static std::map<int, unsigned int> mapStakeModifierCheckpoints =
     boost::assign::map_list_of
     (     0, 0xfd11f4e7u )
+    (  3000, 0xbf421a38u )
+    (  5000, 0x1d88a220u )
+    (  7000, 0xcba090c6u )
+    ( 10000, 0x3bae1eb9u )
 	;
 
 // Get the last stake modifier and its generation time from a given block
@@ -229,8 +233,8 @@ static bool GetKernelStakeModifier(uint256 hashBlockFrom, uint64& nStakeModifier
                     pindex->GetBlockHash().ToString().c_str(), pindex->nHeight, hashBlockFrom.ToString().c_str());
             else
 			{
-				// printf(">> nStakeModifierTime = %"PRI64d", pindexFrom->GetBlockTime() = %"PRI64d", nStakeModifierSelectionInterval = %"PRI64d"\n",
-				//  	nStakeModifierTime, pindexFrom->GetBlockTime(), nStakeModifierSelectionInterval);
+				printf(">> nStakeModifierTime = %"PRI64d", pindexFrom->GetBlockTime() = %"PRI64d", nStakeModifierSelectionInterval = %"PRI64d"\n",
+				  	nStakeModifierTime, pindexFrom->GetBlockTime(), nStakeModifierSelectionInterval);
                 return false;
 			}
         }
@@ -287,7 +291,7 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlock& blockFrom, unsigned 
     int64 nTimeWeight = min((int64)nTimeTx - txPrev.nTime, (int64)nStakeMaxAge) - nStakeMinAge;
     CBigNum bnCoinDayWeight = CBigNum(nValueIn) * nTimeWeight / COIN / (24 * 60 * 60);
 
-	printf(">>> CheckStakeKernelHash: nTimeWeight = %"PRI64d"\n", nTimeWeight);
+	// printf(">>> CheckStakeKernelHash: nTimeWeight = %"PRI64d"\n", nTimeWeight);
     // Calculate hash
     CDataStream ss(SER_GETHASH, 0);
     uint64 nStakeModifier = 0;
@@ -296,10 +300,10 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlock& blockFrom, unsigned 
 
     if (!GetKernelStakeModifier(blockFrom.GetHash(), nStakeModifier, nStakeModifierHeight, nStakeModifierTime, fPrintProofOfStake))
 	{
-		printf(">>> CheckStakeKernelHash: GetKernelStakeModifier return false\n");
+		// printf(">>> CheckStakeKernelHash: GetKernelStakeModifier return false\n");
         return false;
 	}
-	printf(">>> CheckStakeKernelHash: passed GetKernelStakeModifier\n");
+	// printf(">>> CheckStakeKernelHash: passed GetKernelStakeModifier\n");
     ss << nStakeModifier;
 
     ss << nTimeBlockFrom << nTxPrevOffset << txPrev.nTime << prevout.n << nTimeTx;
@@ -321,9 +325,9 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlock& blockFrom, unsigned 
     // Now check if proof-of-stake hash meets target protocol
     if (CBigNum(hashProofOfStake) > bnCoinDayWeight * bnTargetPerCoinDay)
 	{
-		printf(">>> bnCoinDayWeight = %s, bnTargetPerCoinDay=%s\n", 
-			bnCoinDayWeight.ToString().c_str(), bnTargetPerCoinDay.ToString().c_str()); 
-		 printf(">>> CheckStakeKernelHash - hashProofOfStake too much\n");
+		 // printf(">>> bnCoinDayWeight = %s, bnTargetPerCoinDay=%s\n", 
+		 //	bnCoinDayWeight.ToString().c_str(), bnTargetPerCoinDay.ToString().c_str()); 
+		 // printf(">>> CheckStakeKernelHash - hashProofOfStake too much\n");
         return false;
 	}
 
