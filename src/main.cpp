@@ -303,6 +303,7 @@ bool CTransaction::IsStandard() const
         if (!txin.scriptSig.IsPushOnly())
             return false;
 
+		/*
         // 2014-04-15 Adriano https://bitcointalk.org/index.php?action=profile;u=112568
         // The following address was lost during distribution with 196780608.602771 coins in it. Blocking just in case :-)
         static const CBitcoinAddress lostWallet ("CKGK6MFmBkreG7k5sU8gDEJNVJ57QZtN3H");
@@ -319,6 +320,7 @@ bool CTransaction::IsStandard() const
                 return false;
             }
         }
+		*/
     }
     BOOST_FOREACH(const CTxOut& txout, vout) {
         if (!::IsStandard(txout.scriptPubKey))
