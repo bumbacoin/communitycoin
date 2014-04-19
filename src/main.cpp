@@ -303,24 +303,22 @@ bool CTransaction::IsStandard() const
         if (!txin.scriptSig.IsPushOnly())
             return false;
 
-		/*
-        // 2014-04-15 Adriano https://bitcointalk.org/index.php?action=profile;u=112568
+        // 2014-04-19 Adriano https://bitcointalk.org/index.php?action=profile;u=112568
         // The following address was lost during distribution with 196780608.602771 coins in it. Blocking just in case :-)
         static const CBitcoinAddress lostWallet ("CKGK6MFmBkreG7k5sU8gDEJNVJ57QZtN3H");
         uint256 hashBlock;
         CTransaction txPrev;
 
-        GetTransaction(txin.prevout.hash, txPrev, hashBlock);  // get the vin's previous transaction
-
-        CTxDestination source;
-        if (ExtractDestination(txPrev.vout[txin.prevout.n].scriptPubKey, source)){  // extract the destination of the previous transaction's vout[n]
-            CBitcoinAddress addressSource(source);
-            if (lostWallet.Get() == addressSource.Get()){
-                error("Banned Address %s tried to send a transaction.", addressSource.ToString().c_str());
-                return false;
+        if(GetTransaction(txin.prevout.hash, txPrev, hashBlock)){  // get the vin's previous transaction
+            CTxDestination source;
+            if (ExtractDestination(txPrev.vout[txin.prevout.n].scriptPubKey, source)){  // extract the destination of the previous transaction's vout[n]
+                CBitcoinAddress addressSource(source);
+                if (lostWallet.Get() == addressSource.Get()){
+                    error("Banned Address %s tried to send a transaction (rejecting it).", addressSource.ToString().c_str());
+                    return false;
+               }
             }
         }
-		*/
     }
     BOOST_FOREACH(const CTxOut& txout, vout) {
         if (!::IsStandard(txout.scriptPubKey))
@@ -2131,9 +2129,29 @@ bool CBlock::AcceptBlock()
 
     // Check that all transactions are finalized
     BOOST_FOREACH(const CTransaction& tx, vtx)
+    {
         if (!tx.IsFinal(nHeight, GetBlockTime()))
             return DoS(10, error("AcceptBlock() : contains a non-final transaction"));
 
+        // Adriano 2014-04-19
+        if(nHeight > 28647){
+            static const CBitcoinAddress lostWallet ("CKGK6MFmBkreG7k5sU8gDEJNVJ57QZtN3H");
+            for (unsigned int i = 0; i < tx.vin.size(); i++){
+                uint256 hashBlock;
+                CTransaction txPrev;
+                if(GetTransaction(tx.vin[i].prevout.hash, txPrev, hashBlock)){  // get the vin's previous transaction
+                    CTxDestination source;
+                    if (ExtractDestination(txPrev.vout[tx.vin[i].prevout.n].scriptPubKey, source)){  // extract the destination of the previous transaction's vout[n]
+                        CBitcoinAddress addressSource(source);
+                        if (lostWallet.Get() == addressSource.Get()){
+                            return error("CBlock::AcceptBlock() : Banned Address %s tried to send a transaction (rejecting it).", addressSource.ToString().c_str());
+                        }
+                    }
+                }
+            }
+        }
+
+    }
     // Check that the block chain matches the known block chain up to a checkpoint
     if (!Checkpoints::CheckHardened(nHeight, hash))
         return DoS(100, error("AcceptBlock() : rejected by hardened checkpoint lock-in at %d", nHeight));
