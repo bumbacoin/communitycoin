@@ -5,15 +5,9 @@
 USE_UPNP:=1
 USE_IPV6:=1
 
-INCLUDEPATHS= \
- -I"C:/boost_1_53_0" \
- -I"C:/db-4.8.30.NC/build_unix" \
- -I"C:/openssl-1.0.1g/include"
+INCLUDEPATHS= 
  
-LIBPATHS= \
- -L"C:/boost_1_53_0/stage/lib" \
- -L"C:/db-4.8.30.NC/build_unix" \
- -L"C:/openssl-1.0.1g" 
+LIBPATHS= 
 
 
 LIBS= \
@@ -36,8 +30,8 @@ ifndef USE_UPNP
 	override USE_UPNP = -
 endif
 ifneq (${USE_UPNP}, -)
- INCLUDEPATHS += -I"C:/miniupnpc"
- LIBPATHS += -L"C:/miniupnpc"
+ INCLUDEPATHS += -I"E:/"
+ LIBPATHS += -L"E:/miniupnpc"
  LIBS += -l miniupnpc -l iphlpapi
  DEFS += -DSTATICLIB -DUSE_UPNP=$(USE_UPNP)
 endif
