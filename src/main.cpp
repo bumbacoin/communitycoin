@@ -980,9 +980,7 @@ int64 GetProofOfStakeReward(int64 nCoinAge, unsigned int nBits, unsigned int nTi
     int64 nRewardCoinYear;
 	nRewardCoinYear = MAX_MINT_PROOF_OF_STAKE;
 
-	if(nHeight < YEARLY_BLOCKCOUNT)
-		nRewardCoinYear = 30 * MAX_MINT_PROOF_OF_STAKE;
-	else if(nHeight < (2 * YEARLY_BLOCKCOUNT))
+	if(nHeight < 2 * YEARLY_BLOCKCOUNT)
 		nRewardCoinYear = 20 * MAX_MINT_PROOF_OF_STAKE;
 	else if(nHeight < (3 * YEARLY_BLOCKCOUNT))
 		nRewardCoinYear = 10 * MAX_MINT_PROOF_OF_STAKE;
